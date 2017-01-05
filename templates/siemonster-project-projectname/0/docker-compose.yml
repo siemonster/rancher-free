@@ -675,6 +675,8 @@ services:
     - 3528:3528
     volumes:
     - /opt/containers/${SITE_DNAME}/var/log:/var/log
+    volumes_from:
+    - ossec-volume
     environment:
       - SERVER_CN=${SITE_DNAME}
     links:
