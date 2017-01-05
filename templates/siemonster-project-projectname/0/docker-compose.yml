@@ -558,28 +558,16 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.hostname_override: container_name
-      io.rancher.sidekicks: ossec-volume
     tty: true
     stdin_open: true
-    volumes_from:
-    - ossec-volume
+    volumes:
+    - /opt/containers/${SITE_DNAME}/var/ossec/data:/var/ossec/data
     image: ikuturso/siemonster-ossec
     ports:
     - 1514:1514/udp
     - 1514:1514
     - 1515:1515
-
-  ossec-volume:
-    labels:
-      io.rancher.container.pull_image: always
-      io.rancher.container.hostname_override: container_name
-    tty: true
-    stdin_open: true
-    volumes:
-    - /var/ossec/data
-    image: ikuturso/siemonster-ossec
-    command: /bin/bash
-
+    - 55000:55000
 
   reporting:
     labels:
@@ -662,7 +650,6 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.hostname_override: container_name
-      io.rancher.sidekicks: logstash-ossec-volume
       io.rancher.scheduler.affinity:host_label: proteus=1
     tty: true
     stdin_open: true
@@ -676,8 +663,7 @@ services:
     - 3528:3528
     volumes:
     - /opt/containers/${SITE_DNAME}/var/log:/var/log
-    volumes_from:
-    - logstash-ossec-volume
+    - /opt/containers/${SITE_DNAME}/var/ossec/data:/var/ossec/data
     environment:
       - SERVER_CN=${SITE_DNAME}
     links:
@@ -685,17 +671,6 @@ services:
     - health
     image: ikuturso/logstash:ssl
     command: logstash -f /config-dir
-    
-  logstash-ossec-volume:
-    labels:
-      io.rancher.container.pull_image: always
-      io.rancher.container.hostname_override: container_name
-    tty: true
-    stdin_open: true
-    volumes:
-    - /var/ossec/data
-    image: ikuturso/siemonster-ossec
-    command: /bin/bash
 
   syslog-ng:
     labels:
