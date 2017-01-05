@@ -705,6 +705,8 @@ services:
     tty: true
     volumes:
     - /opt/containers/${SITE_DNAME}/var/log:/var/log
+    links:
+    - logstash
     ports:
     - 514:514/udp
     - 514:514
