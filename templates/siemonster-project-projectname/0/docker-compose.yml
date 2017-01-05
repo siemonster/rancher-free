@@ -558,7 +558,7 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.hostname_override: container_name
-      io.rancher.sidekicks: ossec-volume, logstash
+      io.rancher.sidekicks: ossec-volume
     tty: true
     stdin_open: true
     volumes_from:
@@ -675,8 +675,6 @@ services:
     - 3528:3528
     volumes:
     - /opt/containers/${SITE_DNAME}/var/log:/var/log
-    volumes_from:
-    - ossec-volume
     environment:
       - SERVER_CN=${SITE_DNAME}
     links:
