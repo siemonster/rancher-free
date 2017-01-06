@@ -709,7 +709,6 @@ services:
     labels:
       io.rancher.container.start_once: 'true'
       io.rancher.container.pull_image: always
-      io.rancher.scheduler.global: 'true'
     container_name: zap
     image: owasp/zap2docker-stable
     user: zap
