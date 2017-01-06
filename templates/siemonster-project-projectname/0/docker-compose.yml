@@ -704,4 +704,19 @@ services:
       - EMAIL=${GMAILRELAY_EMAIL}
       - EMAILPASS=${GMAILRELAY_EMAILPASS}
     image: lylescott/postfix-gmail-relay
-
+    
+  zap:
+    labels:
+      io.rancher.container.start_once: 'true'
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.global: 'true'
+    container_name: zap
+    image: owasp/zap2docker-stable
+    user: zap
+    ports:
+      - 8090:8090
+    entrypoint:
+      - zap-x.sh
+      - -daemon
+      - -host 0.0.0.0
+      - -port 8090
