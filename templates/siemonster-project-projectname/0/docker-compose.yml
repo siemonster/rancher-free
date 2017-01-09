@@ -288,6 +288,7 @@ services:
     links:
     - es-client-2:es-client
     - gmailrelay
+    - alerta
     hostname: 411.${SITE_DNAME}
 
   411-volume:
@@ -612,6 +613,8 @@ services:
     tty: true
     stdin_open: true
     image: ikuturso/siemonster-siren
+    ports:
+    - 8081:80
     environment:
       - AUTH_REQUIRED=False
       - ADMIN_USERS=not-set
@@ -645,6 +648,8 @@ services:
       io.rancher.scheduler.affinity:host_label: capricorn=1
     tty: true
     stdin_open: true
+    ports:
+    - 8087:8087
     image: ikuturso/siemonster-splogtash-1
 
   logstash:
@@ -670,6 +675,7 @@ services:
     links:
     - es-client-1:es-client
     - health
+    - alerta
     image: ikuturso/logstash:ssl
     command: logstash -f /config-dir
 
