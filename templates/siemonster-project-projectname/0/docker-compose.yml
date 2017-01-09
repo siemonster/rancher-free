@@ -603,6 +603,10 @@ services:
       io.rancher.container.hostname_override: container_name
     tty: true
     stdin_open: true
+    ports:
+    - 8083:8080
+    volumes:
+    - /opt/containers/${SITE_DNAME}/var/www:/var/www:ro
     image: trinitronx/python-simplehttpserver
 
   alerta:
