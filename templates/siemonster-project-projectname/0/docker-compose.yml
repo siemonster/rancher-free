@@ -728,14 +728,14 @@ services:
       - -host 0.0.0.0
       - -port 8090
    
-   event:
-     labels:
-       io.rancher.container.start_once: 'true'
-       io.rancher.container.pull_image: always
-     image: ikuturso/event
-     tty: true
-     stdin_open: true
-     links:
-     - alerta  
-     command: alerta send -r web01 -e NodeUp -E Production -S Website -s major -t "SIEMonster is UP." -v AWESOME
+  event:
+    labels:
+      io.rancher.container.start_once: 'true'
+      io.rancher.container.pull_image: always
+    image: ikuturso/event
+    tty: true
+    stdin_open: true
+    links:
+    - alerta  
+    command: alerta send -r web01 -e NodeUp -E Production -S Website -s major -t "SIEMonster is UP." -v AWESOME
       
