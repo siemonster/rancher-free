@@ -264,7 +264,7 @@ services:
       io.rancher.container.pull_image: always
 
   docker-images-updater:
-    image: ubuntu:14.04.3
+    image: phusion/baseimage
     stdin_open: true
     volumes:
     - /:/host
