@@ -544,7 +544,7 @@ services:
       ELASTICSEARCH_URL: http://elasticsearch:9200
     links:
     - es-client-2:elasticsearch
-    build: https://siemonster:${ACCESS_TOKEN}@github.com/siemonster/dev.git#master:containers/kibana
+    image: ikuturso/siemonster-kibana
 
   minemeld:
     labels:
