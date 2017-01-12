@@ -702,7 +702,6 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.hostname_override: container_name
-      io.rancher.scheduler.affinity:host_label: capricorn=1
     tty: true
     ports:
     - 9025:25
