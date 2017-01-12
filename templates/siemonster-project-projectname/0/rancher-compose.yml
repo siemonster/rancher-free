@@ -25,7 +25,7 @@
       type: string
     - variable: GMAILRELAY_EMAIL
       label: GMAILRELAY_EMAIL
-      description: enter Gmail Relay e-mail address.
+      description: Enter Gmail Relay e-mail address.
       required: false
       type: string
     - variable: GMAILRELAY_EMAILPASS
