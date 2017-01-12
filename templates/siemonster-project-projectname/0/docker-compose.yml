@@ -543,7 +543,7 @@ services:
     environment:
       ELASTICSEARCH_URL: http://elasticsearch:9200
     links:
-    - es-client-2:elasticsearch
+    - es-client:elasticsearch
     image: ikuturso/siemonster-kibana
 
   minemeld:
