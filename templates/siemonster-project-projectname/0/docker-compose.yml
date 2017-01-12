@@ -2,7 +2,7 @@ version: '2'
 services:
 
   siemonster:
-    build: https://siemonster:${ACCESS_TOKEN}@github.com/siemonster/dev.git#master
+    build: https://github.com/siemonster/project-free.git#master
     environment:
       SITE_DNAME: ${SITE_DNAME}
       SITE_NAME: siemonster
@@ -14,7 +14,7 @@ services:
       io.rancher.container.hostname_override: container_name
 
   msa:
-    build: https://siemonster:${ACCESS_TOKEN}@github.com/siemonster/dev.git#master:containers/msa
+    build: https://github.com/siemonster/project-free.git#master:containers/msa
     environment:
       ADDITIONAL_PREPARE_COMMAND: 'echo ''db.getCollection("_sites").update({_id:"siemonster"}, {$$set: {names:["admin.${SITE_DNAME}","app.${SITE_DNAME}","${SITE_DNAME}"]}})'' | mongo mongo-sites; SITE_NAME=siemonster SITE_DOMAIN=${SITE_DNAME} node update-apps-links.js'
     stdin_open: true
@@ -26,7 +26,7 @@ services:
       io.rancher.sidekicks: msa-volume
 
   msa-volume:
-    build: https://siemonster:${ACCESS_TOKEN}@github.com/siemonster/dev.git#master:containers/msa-volume
+    build: https://github.com/siemonster/project-free.git#master:containers/msa-volume
     stdin_open: true
     volumes:
     - /var/lib/mongodb
@@ -283,7 +283,7 @@ services:
     tty: true
     volumes_from:
     - 411-volume
-    build: https://siemonster:${ACCESS_TOKEN}@github.com/siemonster/dev.git#master:containers/411
+    build: https://github.com/siemonster/project-free.git#master:containers/411
     stdin_open: true
     links:
     - es-client-2:es-client
@@ -299,7 +299,7 @@ services:
     tty: true
     volumes:
     - /data
-    build: https://siemonster:${ACCESS_TOKEN}@github.com/siemonster/dev.git#master:containers/411-volume
+    build: https://github.com/siemonster/project-free.git#master:containers/411-volume
     stdin_open: true
     command: /bin/bash
 
@@ -485,7 +485,7 @@ services:
       io.rancher.scheduler.affinity:host_label: tiamat=1
 
   elasticloader:
-    build: https://siemonster:${ACCESS_TOKEN}@github.com/siemonster/dev.git#master:containers/elasticloader
+    build: https://github.com/siemonster/project-free.git#master:containers/elasticloader
     stdin_open: true
     tty: true
     links:
@@ -553,7 +553,7 @@ services:
       io.rancher.scheduler.affinity:host_label: capricorn=1
     tty: true
     stdin_open: true
-    build: https://siemonster:${ACCESS_TOKEN}@github.com/siemonster/dev.git#master:containers/minemeld
+    build: https://github.com/siemonster/project-free.git#master:containers/minemeld
 
   ossec:
     labels:
@@ -594,7 +594,7 @@ services:
     volumes:
     - /root/.local/share/data/bconf
     - /opt/skedler
-    build: https://siemonster:${ACCESS_TOKEN}@github.com/siemonster/dev.git#master:containers/reporting-volume
+    build: https://github.com/siemonster/project-free.git#master:containers/reporting-volume
     command: /bin/bash
 
   info:
@@ -698,7 +698,7 @@ services:
     - 514:514
     - 1516:1516/udp
     - 1516:1516
-    build: https://siemonster:${ACCESS_TOKEN}@github.com/siemonster/dev.git#master:containers/syslog-ng
+    build: https://github.com/siemonster/project-free.git#master:containers/syslog-ng
 
   gmailrelay:
     labels:
