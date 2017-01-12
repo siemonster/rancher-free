@@ -132,7 +132,7 @@ services:
         server {
           server_name sm-kibana.*;
           resolver 169.254.169.250 valid=1s;
-          set $$hostpass "kibana:5606";
+          set $$hostpass "kibana:5601";
           location / {
 
             sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
