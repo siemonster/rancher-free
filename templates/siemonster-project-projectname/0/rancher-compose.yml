@@ -13,12 +13,6 @@
       required: true
       default: master
       type: string
-    - variable: ACCESS_TOKEN
-      description: Specify the access token.
-      label: Access Token
-      required: true
-      default: Enter Token here
-      type: string
     - variable: ELASTICSEARCH_KRAKEN_TIAMAT_HEAP_SIZE
       label: ELASTICSEARCH_KRAKEN_TIAMAT_HEAP_SIZE
       required: true
