@@ -6,7 +6,7 @@ services:
     environment:
       SITE_DNAME: ${SITE_DNAME}
       SITE_NAME: siemonster
-      MSA_URL: //admin.${SITE_DNAME}
+      MSA_URL: //msa.${SITE_DNAME}
     stdin_open: true
     tty: true
     labels:
