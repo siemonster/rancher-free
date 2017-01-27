@@ -703,7 +703,7 @@ services:
     - es-client-1:es-client
     - health
     - alerta
-    image: ikuturso/logstash:ssl
+    build: https://github.com/siemonster/project-free.git#master:containers/logstash
     command: logstash -f /config-dir
 
   syslog-ng:
