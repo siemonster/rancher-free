@@ -11,6 +11,6 @@ heaven-frontend:
     io.rancher.container.hostname_override: container_name
     io.rancher.scheduler.affinity:host_label_soft: heaven=1
   tty: true
-  image: extremeprog/heaven
+  image: ikuturso/heaven
   stdin_open: true
 
