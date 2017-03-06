@@ -55,7 +55,7 @@ services:
       ADDITIONAL_CONFIG: |
         server {
           server_name {{SITE_DNAME}} app.* [a-z0-9-]+\.[a-z0-9-]+\.[a-z]+$$;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "siemonster";
           location / {
             proxy_pass http://$$hostpass;
@@ -69,7 +69,7 @@ services:
 
         server {
           server_name msa.*;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "msa";
           location / {
             proxy_pass http://$$hostpass;
@@ -83,7 +83,7 @@ services:
         
         server {
           server_name admin.*;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "admin";
           location / {
             proxy_pass http://$$hostpass;
@@ -97,7 +97,7 @@ services:
         
         server {
           server_name 411.*;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "411";
           location / {
 
@@ -118,7 +118,7 @@ services:
 
         server {
           server_name minemeld.*;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "minemeld";
           location / {
 
@@ -137,7 +137,7 @@ services:
 
         server {
           server_name ir.*;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "ir:8000";
           location / {
 
@@ -156,7 +156,7 @@ services:
 
         server {
           server_name sm-kibana.*;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "kibana:5601";
           location / {
 
@@ -175,7 +175,7 @@ services:
 
         server {
           server_name health.*;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "health:3000";
           location / {
 
@@ -194,7 +194,7 @@ services:
 
         server {
           server_name reporting.*;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "reporting:3000";
           location / {
 
@@ -213,7 +213,7 @@ services:
 
         server {
           server_name info.*;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "info:8080";
           location / {
 
@@ -232,7 +232,7 @@ services:
 
         server {
           server_name alerta-web.*;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "alerta";
           location / {
 
@@ -251,7 +251,7 @@ services:
 
         server {
           server_name splogtash.*;
-          resolver 169.254.169.250 valid=1s;
+          resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "splogtash:8087";
           location / {
 
@@ -270,7 +270,7 @@ services:
 
         #server {
         #  server_name ~^(?<service>[^.]+)\.(?<stack>[^.]+)\.[a-z0-9-]+\.[a-z0-9-]+\.[a-z]+$$;
-        #  resolver 169.254.169.250 valid=1s;
+        #  resolver 169.254.169.250 valid=2s ipv6=off;
         #  location / {
         #
         #    sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
