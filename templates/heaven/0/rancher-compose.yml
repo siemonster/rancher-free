@@ -15,7 +15,7 @@
       default: |
         server {
           server_name ~^(?<stack>[^.]+)\.[a-z0-9-]+\.[a-z0-9-]+\.[a-z]+$$;
-          resolver 169.254.169.250;
+          resolver 169.254.169.250 ipv6=off;
           location / {
           #  if ($$http_x_forwarded_proto != "https" ) {
           #      return 301 https://$$host$$request_uri;
@@ -30,7 +30,7 @@
 
         server {
           server_name ~^(?<service>[^.]+)\.(?<stack>[^.]+)\.[a-z0-9-]+\.[a-z0-9-]+\.[a-z]+$$;
-          resolver 169.254.169.250;
+          resolver 169.254.169.250 ipv6=off;
           location / {
           #  if ($$http_x_forwarded_proto != "https" ) {
            #     return 301 https://$$host$$request_uri;
