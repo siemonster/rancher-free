@@ -54,7 +54,7 @@ services:
       SITE_DNAME: ${SITE_DNAME}
       ADDITIONAL_CONFIG: |
         server {
-          server_name {{SITE_DNAME}} app.* [a-z0-9-]+\.[a-z0-9-]+\.[a-z]+$$;
+          server_name {{`{{SITE_DNAME}}`}} .* [a-z0-9-]+\.[a-z0-9-]+\.[a-z]+$$;
           resolver 169.254.169.250 valid=2s ipv6=off;
           set $$hostpass "siemonster";
           location / {
