@@ -1,0 +1,770 @@
+version: '2'
+services:
+
+  siemonster:
+    build: https://github.com/siemonster/project-free.git#master
+    environment:
+      SITE_DNAME: ${SITE_DNAME}
+      SITE_NAME: siemonster
+      MSA_URL: //msa.${SITE_DNAME}
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+
+  msa:
+    build: https://github.com/siemonster/project-free.git#master:containers/msa
+    environment:
+      ADDITIONAL_PREPARE_COMMAND: 'echo ''db.getCollection("_sites").update({_id:"siemonster"}, {$$set: {names:["msa.${SITE_DNAME}","app.${SITE_DNAME}","admin.${SITE_DNAME}","${SITE_DNAME}"]}})'' | mongo mongo-sites; SITE_NAME=siemonster SITE_DOMAIN=${SITE_DNAME} node update-apps-links.js'
+    stdin_open: true
+    tty: true
+    volumes_from:
+    - msa-volume
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.sidekicks: msa-volume
+
+  msa-volume:
+    build: https://github.com/siemonster/project-free.git#master:containers/msa-volume
+    stdin_open: true
+    volumes:
+    - /var/lib/mongodb
+    tty: true
+    command: /bin/bash
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.start_once: 'true'
+  
+  admin:
+    image: ikuturso/msa-free
+    environment:
+      SITE_NAME: siemonster
+      MSA_URL: //msa.${SITE_DNAME}
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+
+  heaven-backend:
+    image: extremeprog/heaven
+    environment:
+      DNS_RESOLVER: 169.254.169.250
+      SITE_DNAME: ${SITE_DNAME}
+      ADDITIONAL_CONFIG: |
+        server {
+          server_name {{`{{SITE_DNAME}}`}} app.* [a-z0-9-]+\.[a-z0-9-]+\.[a-z]+$$;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "siemonster";
+          location / {
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+        }
+
+        server {
+          server_name msa.*;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "msa";
+          location / {
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+        }
+        
+        server {
+          server_name admin.*;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "admin";
+          location / {
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+        }
+        
+        server {
+          server_name 411.*;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "411";
+          location / {
+
+            sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
+            sub_filter_once on;
+            sub_filter_types *;
+
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_hide_header Content-Security-Policy;
+            proxy_hide_header X-Frame-Options;
+          }
+        }
+
+        server {
+          server_name minemeld.*;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "minemeld";
+          location / {
+
+            sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
+            sub_filter_once on;
+            sub_filter_types *;
+
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+        }
+
+        server {
+          server_name ir.*;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "ir:8000";
+          location / {
+
+            sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
+            sub_filter_once on;
+            sub_filter_types *;
+
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+        }
+
+        server {
+          server_name sm-kibana.*;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "kibana:5601";
+          location / {
+
+            sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
+            sub_filter_once on;
+            sub_filter_types *;
+
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+        }
+
+        server {
+          server_name health.*;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "health:3000";
+          location / {
+
+            sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
+            sub_filter_once on;
+            sub_filter_types *;
+
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+        }
+
+        server {
+          server_name reporting.*;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "reporting:3000";
+          location / {
+
+            sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
+            sub_filter_once on;
+            sub_filter_types *;
+
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+        }
+
+        server {
+          server_name info.*;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "info:8080";
+          location / {
+
+            sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
+            sub_filter_once on;
+            sub_filter_types *;
+
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+        }
+
+        server {
+          server_name alerta-web.*;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "alerta";
+          location / {
+
+            sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
+            sub_filter_once on;
+            sub_filter_types *;
+
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+        }
+
+        server {
+          server_name splogtash.*;
+          resolver 169.254.169.250 valid=2s ipv6=off;
+          set $$hostpass "splogtash:8087";
+          location / {
+
+            sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
+            sub_filter_once on;
+            sub_filter_types *;
+
+            proxy_pass http://$$hostpass;
+            proxy_set_header Accept-Encoding "";
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header Upgrade $$http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+        }
+
+        #server {
+        #  server_name ~^(?<service>[^.]+)\.(?<stack>[^.]+)\.[a-z0-9-]+\.[a-z0-9-]+\.[a-z]+$$;
+        #  resolver 169.254.169.250 valid=2s ipv6=off;
+        #  location / {
+        #
+        #    sub_filter </head> '</head><script>window.addEventListener("message", function(event){ if( event.origin.match(/^https?:\/\/(localhost(:\d+)?|(app.)?${SITE_DNAME})/) ) eval(event.data);}, false); if(window == top)top.location = "//${SITE_DNAME}/#/welcome";</script>';
+        #
+        #    proxy_pass http://$$service;
+        #    proxy_set_header Accept-Encoding "";
+        #    proxy_set_header Host $$host;
+        #    proxy_set_header X-Real-IP $$remote_addr;
+        #    proxy_set_header Upgrade $$http_upgrade;
+        #    proxy_set_header Connection "upgrade";
+        #  }
+        #}
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+
+  docker-images-updater:
+    image: phusion/baseimage
+    stdin_open: true
+    volumes:
+    - /:/host
+    tty: true
+    command: chroot /host docker pull extremeprog/mongo-sites-api:feature-admin-dbclone
+    labels:
+      io.rancher.container.start_once: 'true'
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.global: 'true'
+
+  '411':
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.sidekicks: 411-volume
+      io.rancher.scheduler.affinity:host_label: capricorn=1
+    tty: true
+    volumes_from:
+    - 411-volume
+    build: https://github.com/siemonster/project-free.git#master:containers/411
+    stdin_open: true
+    links:
+    - es-client-2:es-client
+    - gmailrelay
+    - alerta
+    hostname: 411.${SITE_DNAME}
+
+  411-volume:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: capricorn=1
+    tty: true
+    volumes:
+    - /data
+    build: https://github.com/siemonster/project-free.git#master:containers/411-volume
+    stdin_open: true
+    command: /bin/bash
+
+  ir:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: capricorn=1
+    tty: true
+    image: ikuturso/siemonster-ir
+    stdin_open: true
+
+  dockbeat:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.global: 'true'
+    tty: true
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    links:
+    - es-client-1:elasticsearch
+    image: ingensi/dockbeat
+    stdin_open: true
+
+  collectl:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.global: 'true'
+    tty: true
+    environment:
+      COLLECTL_ARGS: --export graphite,health
+    network_mode: host
+    links:
+    - health:health
+    image: ikuturso/siemonster-collectl
+    stdin_open: true
+
+  es-client-1:
+    cap_add:
+    - IPC_LOCK
+    ulimits:
+      nofile: 65536
+      memlock: -1
+    image: ikuturso/siemonster-alpine-es
+    environment:
+      ES_HEAP_SIZE: ${ELASTICSEARCH_PROTEUS_CAPRICORN_HEAP_SIZE}
+      ES_JAVA_OPTS: -Dmapper.allow_dots_in_name=true
+    ports:
+    - 9200:9200
+    command: >
+      -Des.bootstrap.mlockall=true
+      -Des.discovery.zen.ping.multicast.enabled=false
+      -Des.node.name="node-proteus"
+      -Des.cluster.name="siemonster"
+      -Des.discovery.zen.minimum_master_nodes=2
+      -Des.discovery.zen.ping.unicast.hosts="es-data-node1,es-data-node2"
+      -Des.index.number_of_shards=1
+      -Des.index.refresh_interval=10s
+      -Des.index.translog.flush_threshold=20000
+      -Des.action.auto_create_index=true
+      -Des.action.disable_delete_all_indices=true
+      -Des.node.data=false
+    hostname: proteus
+    labels:
+      io.rancher.scheduler.affinity:host_label: proteus=1
+
+  es-client-2:
+    cap_add:
+    - IPC_LOCK
+    ulimits:
+      nofile: 65536
+      memlock: -1
+    image: ikuturso/siemonster-alpine-es
+    environment:
+      ES_HEAP_SIZE: ${ELASTICSEARCH_PROTEUS_CAPRICORN_HEAP_SIZE}
+      ES_JAVA_OPTS: -Dmapper.allow_dots_in_name=true
+    ports:
+    - 9200:9200
+    command: >
+      -Des.bootstrap.mlockall=true
+      -Des.discovery.zen.ping.multicast.enabled=false
+      -Des.node.name="node-capricorn"
+      -Des.cluster.name="siemonster"
+      -Des.discovery.zen.minimum_master_nodes=2
+      -Des.discovery.zen.ping.unicast.hosts="es-data-node1,es-data-node2"
+      -Des.index.number_of_shards=1
+      -Des.index.refresh_interval=10s
+      -Des.index.translog.flush_threshold=20000
+      -Des.action.auto_create_index=true
+      -Des.action.disable_delete_all_indices=true
+      -Des.node.data=false
+    hostname: capricorn
+    labels:
+      io.rancher.scheduler.affinity:host_label: capricorn=1
+
+  es-data-node1:
+    volumes_from:
+    - es-data-node1-volume
+    cap_add:
+    - IPC_LOCK
+    ulimits:
+      nofile: 65536
+      memlock: -1
+    environment:
+      ES_HEAP_SIZE: ${ELASTICSEARCH_KRAKEN_TIAMAT_HEAP_SIZE}
+    image: ikuturso/siemonster-alpine-es
+    command: >
+      -Des.bootstrap.mlockall=true
+      -Des.discovery.zen.ping.multicast.enabled=false
+      -Des.node.name="node-kraken"
+      -Des.cluster.name="siemonster"
+      -Des.discovery.zen.minimum_master_nodes=2
+      -Des.discovery.zen.ping.unicast.hosts="es-data-node1,es-data-node2"
+      -Des.cluster.routing.allocation.awareness.attributes=disk_type
+      -Des.node.disk_type=ssd
+      -Des.node.data=true
+      -Des.index.number_of_shards=3
+      -Des.index.refresh_interval=10s
+      -Des.index.translog.flush_threshold=20000
+      -Des.action.auto_create_index=true
+      -Des.action.disable_delete_all_indices=true
+      -Des.threadpool.bulk.queue_size=500
+    labels:
+      io.rancher.scheduler.affinity:host_label: kraken=1
+      io.rancher.sidekicks: es-data-node1-volume
+
+  es-data-node1-volume:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+    tty: true
+    stdin_open: true
+    volumes:
+    - /usr/share/elasticsearch/data
+    image: alpine
+    command:  /bin/ash
+    labels:
+      io.rancher.scheduler.affinity:host_label: kraken=1
+
+  es-data-node2:
+    volumes_from:
+    - es-data-node2-volume
+    cap_add:
+    - IPC_LOCK
+    ulimits:
+      nofile: 65536
+      memlock: -1
+    environment:
+      ES_HEAP_SIZE: ${ELASTICSEARCH_KRAKEN_TIAMAT_HEAP_SIZE}
+    image: ikuturso/siemonster-alpine-es
+    command: >
+      -Des.bootstrap.mlockall=true
+      -Des.discovery.zen.ping.multicast.enabled=false
+      -Des.node.name="node-tiamat"
+      -Des.cluster.name="siemonster"
+      -Des.discovery.zen.minimum_master_nodes=2
+      -Des.discovery.zen.ping.unicast.hosts="es-data-node1,es-data-node2"
+      -Des.cluster.routing.allocation.awareness.attributes=disk_type
+      -Des.node.disk_type=ssd
+      -Des.node.data=true
+      -Des.index.number_of_shards=3
+      -Des.index.refresh_interval=10s
+      -Des.index.translog.flush_threshold=20000
+      -Des.action.auto_create_index=true
+      -Des.action.disable_delete_all_indices=true
+      -Des.threadpool.bulk.queue_size=500
+    labels:
+      io.rancher.scheduler.affinity:host_label: tiamat=1
+      io.rancher.sidekicks: es-data-node2-volume
+
+  es-data-node2-volume:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+    tty: true
+    stdin_open: true
+    volumes:
+    - /usr/share/elasticsearch/data
+    image: alpine
+    command: /bin/ash
+    labels:
+      io.rancher.scheduler.affinity:host_label: tiamat=1
+
+  elasticloader:
+    build: https://github.com/siemonster/project-free.git#master:containers/elasticloader
+    stdin_open: true
+    tty: true
+    links:
+    - es-client-1:es-client
+    labels:
+      io.rancher.scheduler.affinity:host_label: tiamat=1
+      io.rancher.container.start_once: 'true'
+
+  es2graphite:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: capricorn=1
+    tty: true
+    stdin_open: true
+    links:
+    - es-client-1:es-client
+    - health
+    environment:
+      ELASTICSEARCH_ADDR: es-client
+      GRAPHITE: health
+      GRAPHITE_PREFIX: PROD.Elasticsearch
+      INTERVAL_SECONDS: 20
+      BULK_SIZE: 10
+    image: logzio/es2graphite
+
+  health:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: proteus=1
+    tty: true
+    stdin_open: true
+    volumes:
+      - /data
+    environment:
+      SECRET_KEY: '0o@t#j(wuvpt5c=%kq-*ns%3y_9*5(h3w9u3zil)b#r%s71kin'
+    ports:
+      - 82:80
+      - 2003:2003
+      - 2004:2004
+      - 7002:7002
+      - 8125:8125/udp
+      - 8126:8126
+      - 3000:3000
+    image: ikuturso/grafana-4
+
+  kibana:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: capricorn=1
+    tty: true
+    stdin_open: true
+    links:
+    - es-client-1:es-client
+    image: ikuturso/siemonster-kibana
+
+  minemeld:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: capricorn=1
+    tty: true
+    stdin_open: true
+    build: https://github.com/siemonster/project-free.git#master:containers/minemeld
+
+  ossec:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: proteus=1
+    tty: true
+    stdin_open: true
+    volumes:
+    - /opt/containers/${SITE_DNAME}/var/ossec/data:/var/ossec/data
+    image: ikuturso/siemonster-ossec
+    ports:
+    - 1514:1514/udp
+    - 1514:1514
+    - 1515:1515
+    - 55000:55000
+
+  reporting:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.sidekicks: reporting-volume
+    tty: true
+    stdin_open: true
+    volumes_from:
+    - reporting-volume
+    links:
+    - es-client-2:es-client
+    - kibana:sm-kibana
+    image: ikuturso/siemonster-reporting-4
+
+  reporting-volume:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+    tty: true
+    stdin_open: true
+    volumes:
+    - /root/.local/share/data/bconf
+    - /opt/skedler
+    build: https://github.com/siemonster/project-free.git#master:containers/reporting-volume
+    command: /bin/bash
+
+  info:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+    tty: true
+    stdin_open: true
+    ports:
+    - 8083:8080
+    volumes:
+    - /opt/containers/${SITE_DNAME}/var/www:/var/www:ro
+    image: trinitronx/python-simplehttpserver
+
+  alerta:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.sidekicks: alerta-db
+    tty: true
+    stdin_open: true
+    image: ikuturso/siemonster-siren
+    ports:
+    - 8081:80
+    environment:
+      - AUTH_REQUIRED=False
+      - ADMIN_USERS=not-set
+      - CUSTOMER_VIEWS=False
+      - PROVIDER=basic
+      - CLIENT_ID=not-set
+      - CLIENT_SECRET=not-set
+      - ALLOWED_EMAIL_DOMAIN=*
+      - ALLOWED_GITHUB_ORGS=*
+      - GITLAB_URL=not-set
+      - ALLOWED_GITLAB_GROUPS=*
+      - PLUGINS=reject
+      - ORIGIN_BLACKLIST=not-set
+      - ALLOWED_ENVIRONMENTS=Production,Development
+      - MONGO_URI=mongodb://alerta-db:27017/monitoring
+
+  alerta-db:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+    tty: true
+    stdin_open: true
+    image: mongo
+    volumes:
+      - /data/db
+
+  splogtash:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: capricorn=1
+    tty: true
+    stdin_open: true
+    ports:
+    - 8087:8087
+    image: ikuturso/siemonster-splogtash-1
+
+  logstash:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: proteus=1
+    tty: true
+    stdin_open: true
+    ports:
+    - 3520:3520
+    - 3521:3521
+    - 3522:3522
+    - 3524:3524
+    - 3525:3525
+    - 3526:3526
+    - 3527:3527
+    - 3528:3528
+    volumes:
+    - /opt/containers/${SITE_DNAME}/var/log:/var/log
+    - /opt/containers/${SITE_DNAME}/var/ossec/data:/var/ossec/data
+    environment:
+      - SERVER_CN=${SITE_DNAME}
+    links:
+    - es-client-1:es-client
+    - health
+    - alerta
+    image: ikuturso/logstash:ssl
+    command: logstash -f /config-dir
+
+  syslog-ng:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: proteus=1
+    tty: true
+    volumes:
+    - /opt/containers/${SITE_DNAME}/var/log:/var/log
+    links:
+    - logstash
+    ports:
+    - 514:514/udp
+    - 514:514
+    - 1516:1516/udp
+    - 1516:1516
+    build: https://github.com/siemonster/project-free.git#master:containers/syslog-ng
+
+  gmailrelay:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+    tty: true
+    ports:
+    - 9025:25
+    environment:
+      - SYSTEM_TIMEZONE=America/Chicago
+      - MYNETWORKS=10.0.0.0/8 192.168.0.0/16 172.0.0.0/8
+      - EMAIL=${GMAILRELAY_EMAIL}
+      - EMAILPASS=${GMAILRELAY_EMAILPASS}
+    image: lylescott/postfix-gmail-relay
+
+  zap:
+    labels:
+      io.rancher.container.start_once: 'true'
+      io.rancher.container.pull_image: always
+    container_name: zap
+    image: owasp/zap2docker-stable
+    tty: true
+    stdin_open: true
+    user: zap
+    ports:
+      - 8090:8090
+    entrypoint:
+      - zap-x.sh
+      - -daemon
+      - -host 0.0.0.0
+      - -port 8090
+   
+  event:
+    labels:
+      io.rancher.container.start_once: 'true'
+      io.rancher.container.pull_image: always
+    image: ikuturso/event
+    tty: true
+    stdin_open: true
+    links:
+    - alerta  
+    command: alerta send -r web01 -e NodeUp -E Production -S Website -s major -t "SIEMonster is UP." -v AWESOME
+      
+
+0
