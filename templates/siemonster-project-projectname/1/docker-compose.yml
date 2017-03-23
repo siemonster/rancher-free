@@ -765,6 +765,4 @@ services:
     links:
     - alerta  
     command: alerta send -r web01 -e NodeUp -E Production -S Website -s major -t "SIEMonster is UP." -v AWESOME
-      
-
-0
+     
