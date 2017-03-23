@@ -1,5 +1,5 @@
 .catalog:
-  version: 2
+  version: "2.1.0"
   questions:
     - variable: SITE_DNAME
       description: Specify the domain name of the site.
