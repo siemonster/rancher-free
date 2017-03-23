@@ -66,6 +66,3 @@ heaven-backend:
 
 es-data-node:
   scale: 2
-
-
-0
