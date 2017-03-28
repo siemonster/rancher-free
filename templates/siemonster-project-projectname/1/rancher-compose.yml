@@ -33,7 +33,7 @@
       label: GMAILRELAY_EMAILPASS
       description: enter password for e-mail address.
       required: false
-      type: string
+      type: password
 
 siemonster:
   scale: 1
