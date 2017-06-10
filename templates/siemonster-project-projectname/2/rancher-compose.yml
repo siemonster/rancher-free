@@ -1,0 +1,72 @@
+version: '2'
+catalog:
+  name: SIEMonster App
+  version: 3
+  description: Test
+  minimum_rancher_version: v1.6.2
+  questions:
+    - variable: SITE_DNAME
+      description: Specify the domain name of the site.
+      label: Site domain name
+      required: true
+      default: projectname.portal.siemonster.com
+      type: string
+    - variable: BRANCH_NAME
+      description: Specify the branch name to checkout.
+      label: Branch name
+      required: true
+      default: master
+      type: string
+    - variable: ELASTICSEARCH_KRAKEN_TIAMAT_HEAP_SIZE
+      label: ELASTICSEARCH_KRAKEN_TIAMAT_HEAP_SIZE
+      required: true
+      default: 2g
+      type: string
+    - variable: ELASTICSEARCH_PROTEUS_CAPRICORN_HEAP_SIZE
+      label: ELASTICSEARCH_PROTEUS_CAPRICORN_HEAP_SIZE
+      required: true
+      default: 1g
+      type: string
+    - variable: GMAILRELAY_EMAIL
+      label: GMAILRELAY_EMAIL
+      description: Enter Gmail Relay e-mail address.
+      required: false
+      type: string
+    - variable: GMAILRELAY_EMAILPASS
+      label: GMAILRELAY_EMAILPASS
+      description: enter password for e-mail address.
+      required: false
+      type: password
+
+siemonster:
+  scale: 1
+  retain_ip: true
+  version: 1
+  health_check:
+    port: 80
+    interval: 2000
+    initializing_timeout: 60000
+    unhealthy_threshold: 3
+    strategy: recreate
+    request_line: GET "/" "HTTP/1.0"
+    healthy_threshold: 2
+    response_timeout: 2000
+
+msa:
+  scale: 1
+  retain_ip: true
+
+msa-volume:
+  scale: 1
+  retain_ip: true
+
+heaven-backend:
+  scale: 1
+  retain_ip: true
+
+411:
+  scale: 1
+  retain_ip: true
+
+es-data-node:
+  scale: 2
