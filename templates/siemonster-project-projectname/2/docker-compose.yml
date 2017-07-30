@@ -36,7 +36,7 @@ services:
       io.rancher.container.start_once: 'true'
   
   admin:
-    image: ikuturso/msa-free
+    image: ikuturso/msa-free:1.1
     environment:
       SITE_NAME: siemonster
       MSA_URL: //msa.${SITE_DNAME}
